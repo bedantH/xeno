@@ -1,7 +1,9 @@
 import Voice from "@react-native-voice/voice";
+import axios from "axios";
 import { Camera, CameraType } from "expo-camera";
 import { Button, Flex, Text, View } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
+import * as Speech from "expo-speech";
 
 export default function SpeechToText() {
   const [isListening, setIsListening] = useState(false);
@@ -51,8 +53,27 @@ export default function SpeechToText() {
 
   const capturePicture = async () => {
     const photo = await cameraRef.current.takePictureAsync({ base64: true });
-    console.log("capturePicture: ", photo.base64);
-    setImageBase64(photo.base64);
+    photo.width = 300;
+    photo.height = 300;
+    try {
+      const response = await axios.post(
+        "https://5f6b-114-143-61-242.ngrok-free.app/llm_analysis",
+        {
+          image: photo.base64,
+        }
+      );
+
+      Speech.speak(response.data["response"], {
+        language: "en",
+        pitch: 1,
+        rate: 1,
+        voice: "com.apple.tts.Fred",
+      });
+      console.log("response", response.data);
+      setImageBase64(photo.base64);
+    } catch (e) {
+      console.log("error", e);
+    }
   };
 
   if (!permission) {
@@ -72,13 +93,20 @@ export default function SpeechToText() {
       <Camera
         style={{
           flex: 1,
+          height: "80%",
         }}
         type={cameraType}
         ref={cameraRef}
       >
-        <Flex position={"absolute"} bottom={10} flexDir={"row"}>
-          <Button onPress={startSpeechToText}>Start listening</Button>
-          <Button onPress={stopSpeechToText}>Stop listening</Button>
+        <Flex
+          position={"absolute"}
+          bottom={10}
+          flexDir={"row"}
+          justifyContent={"space-evenly"}
+          width={"100%"}
+        >
+          {/* <Button onPress={startSpeechToText}>Start listening</Button>
+          <Button onPress={stopSpeechToText}>Stop listening</Button> */}
           <Button onPress={capturePicture}>Capture image</Button>
         </Flex>
       </Camera>
