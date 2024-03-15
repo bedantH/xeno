@@ -5,6 +5,70 @@ import { Camera, CameraType } from "expo-camera";
 import { Button, Flex, Text, View } from "native-base";
 import * as Speech from "expo-speech";
 import * as ImageManipulator from "expo-image-manipulator";
+import * as Location from "expo-location";
+import { useLocation } from "../context/LocationContext";
+import { getRoute } from "../services/getRoute";
+
+let arr = [
+  [73.1767574, 18.8940273],
+  [73.1768081, 18.8936813], // turn
+  [73.1767995, 18.8936535],
+  [73.1768031, 18.89408],
+  [73.1768593, 18.894018],
+  [73.1767597, 18.8937593],
+  [73.1765478, 18.8934392], // turn
+];
+let d = {
+  features: [
+    {
+      properties: {
+        segments: [
+          {
+            distance: 756.4,
+            duration: 544.6,
+            steps: [
+              // {
+              //   distance: 10.4,
+              //   duration: 7.5,
+              //   type: 11,
+              //   instruction: "Start by heading straight",
+              //   name: "",
+              //   way_points: [0, 1],
+              // },
+              {
+                distance: 10.4,
+                duration: 7.5,
+                type: 11,
+                instruction: "turn left up ahead",
+                name: "",
+                way_points: [0, 1],
+              },
+              {
+                distance: 10.4,
+                duration: 7.5,
+                type: 11,
+                instruction: "There is a upcoming right turn",
+                name: "",
+                way_points: [4, 6],
+              },
+            ],
+          },
+        ],
+      },
+      geometry: {
+        coordinates: [
+          [73.1767574, 18.8940273],
+          [73.1768081, 18.8936813], // turn
+          [73.1767995, 18.8936535],
+          [73.1768031, 18.89408],
+          [73.1768593, 18.894018],
+          [73.1767597, 18.8937593],
+          [73.1765478, 18.8934392], // turn
+        ],
+      },
+    },
+  ],
+};
 
 export default function SpeechToText() {
   const [isListening, setIsListening] = useState(false);
@@ -16,6 +80,11 @@ export default function SpeechToText() {
   const [flag, setFlag] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [waypoints, setWayPoints] = useState({});
+  const [data, setData] = useState({});
+  const [waypointCount, setWaypointCount] = useState(0);
+
+  const { location, updateLocation } = useLocation();
   const speech = Speech;
 
   const cameraRef = useRef(null);
@@ -29,6 +98,72 @@ export default function SpeechToText() {
     console.log("onSpeechResults: ", e);
     setResults(e.value);
   };
+
+  useEffect(() => {
+    if (waypoints == {}) return;
+    console.log(":)))", location.longitude, location.latitude);
+    let d1 = distanceFormula(
+      location.longitude,
+      location.latitude,
+      data?.features?.[0]?.geometry?.coordinates?.[waypointCount]?.[0],
+      data?.features?.[0]?.geometry?.coordinates?.[waypointCount]?.[1]
+    );
+    let d2 = distanceFormula(
+      location.longitude,
+      location.latitude,
+      data?.features?.[0]?.geometry?.coordinates?.[waypointCount + 1]?.[0],
+      data?.features?.[0]?.geometry?.coordinates?.[waypointCount + 1]?.[1]
+    );
+
+    if (d2 < d1) {
+      if (waypoints && waypointCount + 1 + "" in waypoints)
+        // speech.speak(waypoints[waypointCount + 1 + ""]?.instruction, {
+        //   language: "en",
+        //   pitch: 1,
+        //   rate: 1,
+        //   voice: "com.apple.tts.Fred",
+        // });
+        setWaypointCount(waypointCount + 1);
+    }
+  }, [location.longitude, location.latitude, waypoints]);
+
+  useEffect(() => {
+    getRoute({
+      start: `${location?.longitude},${location?.latitude}`,
+      end: "73.18170726299287,18.897156309800234",
+    })
+      .then((data) => {
+        data = d;
+        setData(data);
+        const steps = data?.features?.[0]?.properties?.segments?.[0]?.steps;
+
+        // create a object with the waypoints[0] as the key and the whole step object as value
+        const waypoints = {};
+        steps.forEach((step) => {
+          waypoints[step?.way_points[0]] = step;
+        });
+
+        setWayPoints(waypoints);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      }
+
+      setInterval(async () => {
+        let coords = await Location.getCurrentPositionAsync({});
+        updateLocation(coords.coords.longitude, coords.coords.latitude);
+      }, 2000);
+    })();
+  }, []);
 
   useEffect(() => {
     let interval;
@@ -54,6 +189,10 @@ export default function SpeechToText() {
     };
   }, []);
 
+  const distanceFormula = (x1, y1, x2, y2) => {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  };
+
   const startSpeechToText = () => {
     try {
       Voice.start("en-US");
@@ -73,6 +212,7 @@ export default function SpeechToText() {
   const capturePicture = async () => {
     const photo = await cameraRef.current.takePictureAsync({ base64: true });
 
+    setIsLoading(true);
     const compressedPhoto = await ImageManipulator.manipulateAsync(
       photo.uri,
       [{ resize: { width: photo.width, height: photo.height } }],
@@ -80,7 +220,6 @@ export default function SpeechToText() {
     );
 
     try {
-      setIsLoading(true);
       const response = await axios.post(
         "https://9642-114-143-61-242.ngrok-free.app/llm_analysis",
         {
@@ -110,11 +249,11 @@ export default function SpeechToText() {
       }
 
       console.log("response", response.data);
-      setIsLoading(false);
       setImageBase64(photo.base64);
     } catch (e) {
       console.log("error", e);
     }
+    setIsLoading(false);
   };
 
   if (!permission) {
@@ -143,30 +282,48 @@ export default function SpeechToText() {
           position={"absolute"}
           top={10}
           flexDir="row"
-          justifyContent={"space-around"}
+          justifyContent={"center"}
           alignItems="center"
           width={"100%"}
         >
-          <Button onPress={startSpeechToText}>Start listening</Button>
-          <Button onPress={stopSpeechToText}>Stop listening</Button>
+          <Button
+            onPress={async () => {
+              let coords = await Location.getCurrentPositionAsync({});
+              console.log(coords.coords.longitude, coords.coords.latitude);
+            }}
+          >
+            Log coordinates
+          </Button>
         </Flex> */}
         <Flex
           position={"absolute"}
           bottom={10}
           flexDir={"row"}
-          justifyContent={"space-around"}
+          justifyContent={"center"}
           alignItems="center"
           width={"100%"}
+          style={{
+            gap: 10,
+          }}
         >
           <Button
+            color="#000"
+            style={{
+              backgroundColor: "white",
+            }}
             onPress={() => {
               setFlag(true);
               capturePicture();
             }}
           >
-            Capture image
+            <Text>Capture image</Text>
           </Button>
           <Button
+            color="#000"
+            style={{
+              width: 160,
+              backgroundColor: "white",
+            }}
             onPress={() => {
               if (!isRealtime) {
                 setIsRealtime(true);
@@ -176,7 +333,7 @@ export default function SpeechToText() {
               }
             }}
           >
-            {isRealtime ? "Stop" : "Start"} Realtime
+            <Text>{isRealtime ? "Stop Realtime" : "Start Realtime"}</Text>
           </Button>
         </Flex>
       </Camera>
