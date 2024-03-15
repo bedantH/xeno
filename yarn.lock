@@ -1809,6 +1809,26 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
+"@picovoice/picovoice-react-native@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@picovoice/picovoice-react-native/-/picovoice-react-native-3.0.2.tgz#239eb9b9c8385cc90bb1af1de764da7c9d383afb"
+  integrity sha512-NHII4TW96+MTHNfCy4Olsdb6LsMFqwpjId4+MWceEGG2A2yMwoniGhJwNdn5UqeLzJ8/MPw6iMyXPfZCk+RFbA==
+
+"@picovoice/porcupine-react-native@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@picovoice/porcupine-react-native/-/porcupine-react-native-3.0.2.tgz#8eabb16222ad95902a48202b427d669032df2c6a"
+  integrity sha512-nmvk1aBVPQ45kCdfToq5DhvyQDdkSO9XZjBO/2KRgTs1qNXDfYeo0vZGvQuUWdGpfzgZExYcVcNLfs8k0jB5fg==
+
+"@picovoice/react-native-voice-processor@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@picovoice/react-native-voice-processor/-/react-native-voice-processor-1.2.2.tgz#dac86c918a3f299d859a3988fe25f98faa5d13a2"
+  integrity sha512-l3pQWNfPI7lJiVnMhyjQx9WoF1QhvsBNf9pEIVcEGipHrfdW1HTZ3RPRRHfZLUSPiIGHrQf1R/tMshQPZmkY3w==
+
+"@picovoice/rhino-react-native@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@picovoice/rhino-react-native/-/rhino-react-native-3.0.2.tgz#5ae7736d1883818b33567132ce5d5c88e07030f2"
+  integrity sha512-aVABth45eaAIWTAnYj3kVRosK8rHxbPKtoFRKTT3V0aU6g98ShQEh0t4ft9EUo5pcQiKCYCG0YhXaH9phOT6Zg==
+
 "@react-aria/checkbox@3.2.1":
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/@react-aria/checkbox/-/checkbox-3.2.1.tgz#493d9d584b4db474645a4565c4f899ee3a579f07"

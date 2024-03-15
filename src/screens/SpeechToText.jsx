@@ -8,6 +8,10 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as Location from "expo-location";
 import { useLocation } from "../context/LocationContext";
 import { getRoute } from "../services/getRoute";
+import {
+  PicovoiceErrors,
+  PicovoiceManager,
+} from "@picovoice/picovoice-react-native";
 
 let arr = [
   [73.1767574, 18.8940273],
@@ -84,20 +88,46 @@ export default function SpeechToText() {
   const [data, setData] = useState({});
   const [waypointCount, setWaypointCount] = useState(0);
 
+  const [keywordDetected, setKeywordDetected] = useState(false);
+
   const { location, updateLocation } = useLocation();
   const speech = Speech;
 
+  const ACCESS_KEY = "vFBO3p2TwSTGtMjKyMUQUY9HrdK3kU1SmhvFkMl7PFaVDy0JBy3qNQ==";
+  let picovoiceManager;
+
   const cameraRef = useRef(null);
 
-  Voice.onSpeechStart = () => {
-    console.log("Speech started");
+  const wakeWordCallback = () => {
     setIsListening(true);
   };
 
-  Voice.onSpeechResults = (e) => {
-    console.log("onSpeechResults: ", e);
-    setResults(e.value);
+  const startProcessing = async () => {
+    try {
+      picovoiceManager.start();
+    } catch (er) {
+      console.log("Error: ", er);
+    }
   };
+
+  useEffect(() => {
+    let wakeWordPath = `../../viz_bot.ppn`;
+
+    picovoiceManager = PicovoiceManager.create(
+      ACCESS_KEY,
+      wakeWordPath,
+      wakeWordCallback(),
+      (err) => {
+        console.log("Error: ", err);
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (keywordDetected) {
+      console.log("Keyword detected");
+    }
+  }, [keywordDetected]);
 
   useEffect(() => {
     if (waypoints == {}) return;
@@ -193,19 +223,33 @@ export default function SpeechToText() {
     return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
   };
 
-  const startSpeechToText = () => {
-    try {
-      Voice.start("en-US");
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const summarizeSur = async () => {
+    const photo = await cameraRef.current.takePictureAsync({ base64: true });
 
-  const stopSpeechToText = () => {
+    setIsLoading(true);
+    const compressedPhoto = await ImageManipulator.manipulateAsync(
+      photo.uri,
+      [{ resize: { width: photo.width, height: photo.height } }],
+      { format: "jpeg", base64: true, compress: 0.3 }
+    );
+
     try {
-      Voice.stop();
-    } catch (e) {
-      console.error(e);
+      const response = await axios.post(
+        "https://9642-114-143-61-242.ngrok-free.app/cap",
+        {
+          image: compressedPhoto.base64,
+          content: isRealtime ? 0 : 1,
+        }
+      );
+      console.log("response", response.data);
+      speech.speak(response?.data?.["response"], {
+        language: "en",
+        pitch: 1,
+        rate: 1,
+        voice: "com.apple.tts.Fred",
+      });
+    } catch (err) {
+      console.log("error", err);
     }
   };
 
@@ -334,6 +378,30 @@ export default function SpeechToText() {
             }}
           >
             <Text>{isRealtime ? "Stop Realtime" : "Start Realtime"}</Text>
+          </Button>
+        </Flex>
+        <Flex
+          position={"absolute"}
+          bottom={100}
+          flexDir={"row"}
+          justifyContent={"center"}
+          alignItems="center"
+          width={"100%"}
+          style={{
+            gap: 10,
+          }}
+        >
+          <Button
+            color="#000"
+            style={{
+              backgroundColor: "white",
+            }}
+            onPress={() => {
+              setFlag(true);
+              summarizeSur();
+            }}
+          >
+            <Text>Whats around me</Text>
           </Button>
         </Flex>
       </Camera>
