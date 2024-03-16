@@ -81,7 +81,7 @@ export default function SpeechToText() {
   const [cameraType, setCameraType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const [isRealtime, setIsRealtime] = useState(false);
-  const [flag, setFlag] = useState(true);
+  // const [flag, setFlag] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const [waypoints, setWayPoints] = useState({});
@@ -273,7 +273,7 @@ export default function SpeechToText() {
       );
 
       if (response?.data?.["response"]?.includes("blocked")) {
-        setFlag(true);
+        // setFlag(true);
 
         speech.speak(response?.data?.["response"], {
           language: "en",
@@ -281,8 +281,8 @@ export default function SpeechToText() {
           rate: 1,
           voice: "com.apple.tts.Fred",
         });
-      } else if (flag && response?.data?.["response"]?.includes("clear")) {
-        setFlag(false);
+      } else if (response?.data?.["response"]?.includes("clear")) {
+        // setFlag(false);
 
         speech.speak(response?.data?.["response"], {
           language: "en",
@@ -356,7 +356,7 @@ export default function SpeechToText() {
               backgroundColor: "white",
             }}
             onPress={() => {
-              setFlag(true);
+              // setFlag(true);
               capturePicture();
             }}
           >
@@ -397,7 +397,7 @@ export default function SpeechToText() {
               backgroundColor: "white",
             }}
             onPress={() => {
-              setFlag(true);
+              // setFlag(true);
               summarizeSur();
             }}
           >
