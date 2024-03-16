@@ -21,9 +21,9 @@ For the Frontend of the application, clone this repository and run `npx expo sta
 
 Once server starts in the terminal, click `s` on your keyboard. After this select `Scan QR code` option from the expo application and scan the QR shown on the terminal. 
 
-![[/screenshots/1.jpeg]]
+![[./screenshots/1.jpeg]]
 
-![[/screenshots/2.jpeg]]
+![[./screenshots/2.jpeg]]
 
 After the scan is complete it open a link in your browser to select whether you want to install `APK` or run on `Expo`, select to run on `Expo`. Once that is done, the app will be installed and ready to use.
 
@@ -42,7 +42,7 @@ Backend:
 	6. ngrok
 
 ### App Screens
-![[26dccf38-581c-4c21-b263-93f22dfc4829.jpeg]]
+![[./screenshots/3.jpeg]]
 
 **Options**:
 
