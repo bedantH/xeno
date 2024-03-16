@@ -1,3 +1,4 @@
+# Xeno
 The project aims to assist visually impaired individuals in navigation through a computer vision-based application. Using object detection and depth estimation, the app identifies obstacles in real-time and provides guidance on whether it's safe to proceed or suggests alternative routes. Integrated with the OpenServiceNetwork API, it offers comprehensive route information and instructions tailored to the user's location. The app operates with remarkable speed, processing and responding to obstacles within a 3-second timeframe, ensuring timely assistance for users. Overall, the application offers a unique and innovative solution to enhance the independence and safety of visually impaired individuals during navigation.
 
 ### Challenges faced by visually impaired people
